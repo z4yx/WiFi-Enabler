@@ -45,12 +45,9 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val curDateTime = SimpleDateFormat("MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
         var text = "Turn on WiFi at " + curDateTime
-
-        Log.i("WiFiEnablerBroadcast", "Alarm fires")
-        Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-
         val succ = enableWiFi(context)
         text += " " + succ.toString()
+        Log.i("WiFiEnablerBroadcast", text)
         logEvent(context, text)
         if(!succ && context!=null) {
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -68,8 +65,12 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
 //            launchWiFiSetting(context)
         }
 
-        if (context != null)
-            registerAlarm(context)
+        if (context != null) {
+            text = registerAlarm(context)
+            Log.i("WiFiEnablerBroadcast", text)
+//            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun launchWiFiSetting(context: Context?) {
@@ -93,31 +94,38 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
         return wifiMan.setWifiEnabled(true)
     }
 
-    fun registerAlarm(ctx: Context) {
+    fun registerAlarm(ctx: Context) : String {
         val appCtx = ctx.applicationContext
         val alarmMan = appCtx.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
         val intent = Intent(appCtx, AlarmBroadcastReceiver::class.java)
         val pendIntent = PendingIntent.getBroadcast(appCtx, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val now = Calendar.getInstance();
+        var result = "Alarm at ";
+        var alarmWindow = 10 * 60 * 1000L;
         val calendar = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            if (get(Calendar.HOUR_OF_DAY) >= 17) {
-                add(Calendar.DAY_OF_MONTH, 1)
-            }
+//            timeInMillis = System.currentTimeMillis()
             set(Calendar.HOUR_OF_DAY, 17)
             set(Calendar.MINUTE, 25)
+            if (now.timeInMillis-timeInMillis >= -alarmWindow) {
+                // `calendar` is before `now`
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
         }
-        alarmMan?.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, 10*60*1000, pendIntent)
+        alarmMan?.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, alarmWindow, pendIntent)
+        result += calendar.time.toString();
+        result += "\nand ";
 
         val pendIntent2 = PendingIntent.getBroadcast(appCtx, 124, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         with(calendar) {
-            timeInMillis = System.currentTimeMillis()
-            if (get(Calendar.HOUR_OF_DAY) >= 8) {
-                add(Calendar.DAY_OF_MONTH, 1)
-            }
             set(Calendar.HOUR_OF_DAY, 8)
             set(Calendar.MINUTE, 50)
+            if (now.timeInMillis-timeInMillis >= -alarmWindow) {
+                // `calendar` is before `now`
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
         }
-        alarmMan?.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, 10*60*1000, pendIntent2)
-
+        alarmMan?.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, alarmWindow, pendIntent2)
+        result += calendar.time.toString();
+        return result
     }
 }

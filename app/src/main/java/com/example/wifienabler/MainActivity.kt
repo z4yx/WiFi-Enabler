@@ -53,9 +53,9 @@ class MainActivity : AppCompatActivity() {
 
     fun registerAlarm(view: View) {
         val recv = AlarmBroadcastReceiver()
-        recv.registerAlarm(this)
+        val text = recv.registerAlarm(this)
 
-        Toast.makeText(this, "Alarm Registered", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show()
     }
 
     fun refershEventView(view: View) {
