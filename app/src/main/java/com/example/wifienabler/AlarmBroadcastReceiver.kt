@@ -91,7 +91,8 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
         if (wifiMan.isWifiEnabled) {
             return true
         }
-        return wifiMan.setWifiEnabled(true)
+        wifiMan.setWifiEnabled(true)
+        return wifiMan.isWifiEnabled;
     }
 
     fun registerAlarm(ctx: Context) : String {
@@ -101,7 +102,7 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
         val pendIntent = PendingIntent.getBroadcast(appCtx, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val now = Calendar.getInstance();
         var result = "Alarm at ";
-        var alarmWindow = 10 * 60 * 1000L;
+        var alarmWindow = 8 * 60 * 1000L;
         val calendar = Calendar.getInstance().apply {
 //            timeInMillis = System.currentTimeMillis()
             set(Calendar.HOUR_OF_DAY, 17)
